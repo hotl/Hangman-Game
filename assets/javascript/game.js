@@ -10,18 +10,28 @@ function gameLogic() {
 	var randomWord = RG.generateRandomWord();
 	document.getElementById('word-blanks').innerHTML = RG.generateUnderscore(randomWord);
 	document.onkeypress = function(e) {
-		var userInput = e.which || e.keyCode;
-		userInput = String.fromCharCode(userInput);
-		alert(userInput + ' was pressed');
-	}
+		var userInput = String.fromCharCode(e.keyCode).toLowerCase();
+		if (!/[a-z]/.test(userInput)) return;
+
+	};
 };
 
 var State = function() {
-	var numberOfGuesses = 12;
-	var lettersGuessed = [];
-	var gameOver = false;
+	var numberOfGuesses;
+	var lettersGuessed;
+	var gameOver;
 
 	return {
+		initializeState: function() {
+			// implement hard/easy mode, which changes numberOfGuesses
+			// Create HTML input to allow user to choose level of difficulty
+			numberOfGuesses = 12;
+			lettersGuessed = [];
+			gameOver = false;
+		},
+		resetState: function() {
+			this.initializeState();
+		}
 		isGameOver: function() {
 			return gameOver;
 		},
