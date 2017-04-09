@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<!-- Including Bootstrap -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	</head>
+
+	<body>
+	<div class="container">
+		<div class="jumbotron">
+			<div class="container text-center">
+				<h1>Hangman</h1>
+				<h2>Press any key to get started!</h2>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-4">
+				<!-- Holds the word to guess (blanks and guessed word) -->
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><strong>Word to Guess</strong></h3>
+						</div>
+						<div class="panel-body">
+						<!-- h3 section will hold _'s in place of our word -->
+							<h3 id="word-blanks">_ _ _ _</h3>
+							<div id="remaining-guesses-div">
+								<h3>Remaining Guesses:</h3>
+								<h3 id="remaining-guesses">12</h3>
+							</div>
+							<div id="">
+								<h3>Already Guessed:</h3>
+								<h3 id="already-guessed">[]</h3>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	</body>
+	<script src="assets/javascript/game.js"></script>
+</html>
