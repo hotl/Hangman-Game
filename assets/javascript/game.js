@@ -1,62 +1,102 @@
 var tid = setInterval(function() {
 	if (document.readyState !== 'complete') return;
 	clearInterval(tid);
-	gameLogic();
+	Main();
 }, 100);
 
+var DOMElements = {
+	wordBlanks: document.getElementById('word-blanks'),
+	remainingGuesses: document.getElementById('remaining-guesses'),
+	alreadyGuessed: document.getElementById('already-guessed')
+};
 
-function gameLogic() {
-	var State = Controller.State();
-	var RG = Controller.Generate();
-	var randomWord = RG.generateRandomWord();
-	var wordBlanks = document.getElementById('word-blanks');
-	wordBlanks.innerHTML = RG.generateUnderscore(randomWord);
-	document.onkeypress = function(e) {
+// Imperative Control Flow
+function Main() {
+	var controller = Controller();
+	var rg = controller.RandomGenerator;
+	var state = controller.State;
+
+	document.onkeypress = function(e) 
+	{
 		var userInput = String.fromCharCode(e.keyCode).toLowerCase();
 		if (!/^[a-z]+$/.test(userInput)) return;
-
+		if (state.getGameOver()) {
+			state.resetState();	
+		}
+		controller.processTurn(userInput);
 	};
 };
 
-var Controller = {
-	State: function() {
-		var numberOfGuesses;
-		var lettersGuessed;
-		var gameOver;
+function Controller() {
+	return new Controller.init();
+};
+
+Controller.init = function() {
+
+	var State = function() {
+		var randomWord, remainingGuesses, lettersGuessed, gameOver;
+		var isGameOver = function() {
+			var guess = Array.from(lettersGuessed).join('');
+			gameOver = remainingGuesses === 0 || guess === randomWord;
+			console.log('guess: ' + guess);
+			console.log('remaining: ' + remainingGuesses);
+			if (guess === randomWord) {
+				// player won
+				// Create new HTML element to update with text saying you won
+			}
+			else if (remainingGuesses === 0) {
+				// player lost
+			}
+			
+			return gameOver;
+		};
 
 		return {
 			initializeState: function() {
-				// implement hard/easy mode, which changes numberOfGuesses
-				// Create HTML input to allow user to choose level of difficulty
-				numberOfGuesses = 12;
-				lettersGuessed = [];
+				randomWord = Generator().generateRandomWord();
+				remainingGuesses = 12;
+				lettersGuessed = new Set();
 				gameOver = false;
+
+				// Initialize DOMElements
+				DOMElements.wordBlanks.innerHTML = Generator().generateUnderscore(randomWord);
+				DOMElements.remainingGuesses.innerHTML = remainingGuesses;
+				DOMElements.alreadyGuessed.innerHTML = '';
 			},
 			resetState: function() {
 				this.initializeState();
 			},
-			isGameOver: function() {
+			setGameOver: function(gameOver) {
+				this.gameOver = gameOver;
+			},
+			getGameOver: function() {
 				return gameOver;
 			},
 			decrementGuesses: function() {
-				numberOfGuesses--;
-				return numberOfGuesses;
+				remainingGuesses--;
+				return remainingGuesses;
 			},
 			addLetterGuesses: function(letter) {
-				if (this.isGameOver()) {
+				this.decrementGuesses();
+				lettersGuessed.add(letter);
+				if (isGameOver()) {
+					this.resetState();
 					alert('Game over');
 					return;
 				}
-				lettersGuessed.push(letter);
 				return lettersGuessed;
+			},
+			getRandomWord: function() {
+				return randomWord;
+			},
+			getRemainingGuesses: function() {
+				return remainingGuesses;
 			}
 		}
-	},
-	Generate: function() {
+	};
+
+	var Generator = function() {
 		var RandomGenerator = function() {
-			return new RandomGenerator.init();
-		};
-		RandomGenerator.init = function() {
 			this.wordChoices = ['Honda','Toyota','Lexus','BMW','Tesla'];
 			this.generateRandomWord = function() {
 				var wc = this.wordChoices;
@@ -68,12 +108,29 @@ var Controller = {
 					underscores.push('_');
 				}
 				return underscores.join(' ');
-			}
+			};
 
 			return this;
 		};
 
-		return RandomGenerator();
-	}
+		return new RandomGenerator();
+	};
+
+	this.processTurn = function(userInput) {
+		console.log(userInput);
+		console.log(this.State.getGameOver());
+		this.State.addLetterGuesses(userInput);
+		// Re-render DOMElements
+		// this.State.setGameOver(this.State.isGameOver() ? true : false);
+
+		if (this.State.getGameOver()) this.State.resetState();
+	};
+
+	this.State = new State();
+	this.RandomGenerator = Generator();
+	this.State.initializeState();
+
+	return this;
 };
 
+Controller.init.prototype = Controller.prototype;
