@@ -14,9 +14,6 @@ function Main() {
 	{
 		var userInput = String.fromCharCode(e.keyCode).toLowerCase();
 		if (!/^[a-z]+$/.test(userInput)) return;
-		if (State.getGameOver()) {
-			State.resetState();	
-		}
 		controller.processTurn(userInput);
 	};
 };
@@ -50,18 +47,30 @@ Controller.init = function() {
 		};
 
 		return {
+			// Helper functions
 			initializeState: function() {
 				randomWord = generator.generateRandomWord();
+				console.log(randomWord);
 				wordBlanks = generator.generateUnderscore(randomWord);
 				alreadyGuessed = new Set();
 				remainingGuesses = 12;
-				gameOver = false;
+				gameOver = {
+					status: false,
+					message: ''
+				};
 
 				// Initialize DOMElements
 				this.renderHTML();
 			},
 			resetState: function() {
 				this.initializeState();
+			},
+			indexOf: function(letter) {
+				var indexes = [];
+				for (var i = 0; i < randomWord.length; i++) {
+					if (letter === randomWord.toLowerCase()[i]) indexes.push(i);
+				}
+				return indexes;
 			},
 
 			// Getters & Setters
@@ -86,25 +95,23 @@ Controller.init = function() {
 			addLetterGuesses: function(letter) {
 				this.decrementGuesses();
 				alreadyGuessed.add(letter);
-				if (this.isGameOver()) {
-					this.resetState();
-					alert('Game over');
-					return;
+				var indexes = this.indexOf(letter);
+				for (var i = 0; i < indexes.length; i++) {
+					wordBlanks[indexes[i]] = randomWord[indexes[i]];
 				}
 				this.renderHTML();
 				return alreadyGuessed;
 			},
 			isGameOver: function() {
 				var guess = Array.from(alreadyGuessed).join('');
-				console.log('guess: ' + guess);
-				console.log('remaining: ' + remainingGuesses);
+				gameOver.status = (guess === randomWord.toLowerCase() || remainingGuesses === 0);
 				if (guess === randomWord.toLowerCase()) {
-					alert('You won');
+					gameOver.message = "Congratulations, you won!";
 				}
 				else if (remainingGuesses === 0) {
-					alert('You lost');
+					gameOver.message = "You lost!";
 				}
-				
+
 				return gameOver;
 			},
 			renderHTML: function() {
@@ -128,7 +135,7 @@ Controller.init = function() {
 				for (var char in word) {
 					underscores.push('_');
 				}
-				return underscores.join(' ');
+				return underscores;
 			};
 
 			return this;
@@ -138,13 +145,11 @@ Controller.init = function() {
 	};
 
 	this.processTurn = function(userInput) {
-		console.log(userInput);
-		console.log(this.State.getGameOver());
+		console.log('userInput:', userInput);
 		this.State.addLetterGuesses(userInput);
-		// Re-render DOMElements
-		// this.State.setGameOver(this.State.isGameOver() ? true : false);
-
-		if (this.State.getGameOver()) this.State.resetState();
+		if (this.State.isGameOver().status) {
+			this.State.resetState();
+		}
 	};
 
 	this.State = new State();
